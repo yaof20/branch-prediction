@@ -11,9 +11,9 @@
 //
 // TODO:Student Information
 //
-const char *studentName = "NAME";
-const char *studentID   = "PID";
-const char *email       = "EMAIL";
+const char *studentName = "Feng Yao";
+const char *studentID   = "A59025438";
+const char *email       = "fengyao@ucsd.edu";
 
 //------------------------------------//
 //      Predictor Configuration       //
@@ -36,11 +36,34 @@ int verbose;
 //
 //TODO: Add your own Branch Predictor data structures here
 //
+uint8_t* counter_table;
+uint32_t global_register;
+
 
 
 //------------------------------------//
 //        Predictor Functions         //
 //------------------------------------//
+uint32_t get_lower_bits(uint32_t input_num){
+  uint32_t mask = (1 << ghistoryBits) - 1; // mask for getting the lower bits, a binary number consists of 1s
+  return input_num & mask; // 
+}
+
+int get_index(uint32_t pc){
+  uint32_t pc_lower_bits = get_lower_bits(pc);
+  switch (bpType) {
+    case GSHARE:
+      return (pc_lower_bits ^ global_register);
+    default:
+      break;
+  }
+  return 0;
+};
+
+uint8_t predict(uint32_t index, uint8_t* counter_table){
+  return (counter_table[index] > 1) ? TAKEN : NOTTAKEN;
+}
+
 
 // Initialize the predictor
 //
@@ -50,6 +73,21 @@ init_predictor()
   //
   //TODO: Initialize Branch Predictor Data Structures
   //
+  switch (bpType) {
+    case GSHARE:
+      // init GR
+      global_register = 0;
+
+      // init counter table
+      int table_length = 1 << ghistoryBits;
+      counter_table = (uint8_t*)malloc(table_length * sizeof(uint8_t));
+      for(int i = 0; i < table_length; i++){
+        counter_table[i] = WN;
+      }
+
+    default:
+      break;
+  }
 }
 
 // Make a prediction for conditional branch instruction at PC 'pc'
@@ -62,12 +100,14 @@ make_prediction(uint32_t pc)
   //
   //TODO: Implement prediction scheme
   //
+  uint32_t index=get_index(pc);
 
   // Make a prediction based on the bpType
   switch (bpType) {
     case STATIC:
       return TAKEN;
     case GSHARE:
+      return predict(index, counter_table);
     case TOURNAMENT:
     case CUSTOM:
     default:
@@ -88,4 +128,24 @@ train_predictor(uint32_t pc, uint8_t outcome)
   //
   //TODO: Implement Predictor training
   //
+  uint32_t index, updated_gr;
+  switch (bpType) {
+    case GSHARE:
+      // update counter table
+      index = get_index(pc);
+      if(outcome == TAKEN && counter_table[index] < 3)
+        counter_table[index]++;
+      if(outcome == NOTTAKEN && counter_table[index] > 0)
+        counter_table[index]--;
+
+      // update global register
+      updated_gr = (global_register << 1) | outcome; // the last bit is current outcome
+      global_register = get_lower_bits(updated_gr);
+      break;
+
+    case TOURNAMENT:
+    case CUSTOM:
+    default:
+      break;
+  }
 }
