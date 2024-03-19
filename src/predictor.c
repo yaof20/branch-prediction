@@ -36,7 +36,7 @@ int verbose;
 //
 //TODO: Add your own Branch Predictor data structures here
 //
-uint8_t* counter_table;
+uint32_t* counter_table;
 uint32_t global_register;
 
 
@@ -60,7 +60,7 @@ int get_index(uint32_t pc){
   return 0;
 };
 
-uint8_t predict(uint32_t index, uint8_t* counter_table){
+uint8_t predict(uint32_t index, uint32_t* counter_table){
   return (counter_table[index] > 1) ? TAKEN : NOTTAKEN;
 }
 
@@ -80,7 +80,7 @@ init_predictor()
 
       // init counter table
       int table_length = 1 << ghistoryBits;
-      counter_table = (uint8_t*)malloc(table_length * sizeof(uint8_t));
+      counter_table = (uint32_t*)malloc(table_length * sizeof(uint32_t));
       for(int i = 0; i < table_length; i++){
         counter_table[i] = WN;
       }
