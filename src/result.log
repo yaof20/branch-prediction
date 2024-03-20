@@ -1,0 +1,20 @@
+STATIC : fp_1 , Error Rate:  12.128
+STATIC : fp_2 , Error Rate:  42.350
+STATIC : int_1, Error Rate:  44.136
+STATIC : int_2, Error Rate:   5.508
+STATIC : mm_1 , Error Rate:  50.353
+STATIC : mm_2 , Error Rate:  37.045
+===============
+GSHARE : fp_1 , Error Rate:   0.825
+GSHARE : fp_2 , Error Rate:   1.678
+GSHARE : int_1, Error Rate:  13.839
+GSHARE : int_2, Error Rate:   0.420
+GSHARE : mm_1 , Error Rate:   6.696
+GSHARE : mm_2 , Error Rate:  10.138
+===============
+TOURNAMENT : fp_1 , Error Rate:   1.030
+TOURNAMENT : fp_2 , Error Rate:   5.429
+TOURNAMENT : int_1, Error Rate:  14.662
+TOURNAMENT : int_2, Error Rate:   0.504
+TOURNAMENT : mm_1 , Error Rate:   4.919
+TOURNAMENT : mm_2 , Error Rate:   9.454

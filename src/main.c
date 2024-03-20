@@ -84,6 +84,7 @@ main(int argc, char *argv[])
   stream = stdin;
   bpType = STATIC;
   verbose = 0;
+  char* file_name;
 
   // Process cmdline Arguments
   for (int i = 1; i < argc; ++i) {
@@ -98,6 +99,7 @@ main(int argc, char *argv[])
       }
     } else {
       // Use as input file
+      strcpy(file_name, argv[i]+10);
       stream = fopen(argv[i], "r");
     }
   }
@@ -128,10 +130,29 @@ main(int argc, char *argv[])
   }
 
   // Print out the mispredict statistics
-  printf("Branches:        %10d\n", num_branches);
-  printf("Incorrect:       %10d\n", mispredictions);
+  // printf("Branches:        %10d\n", num_branches);
+  // printf("Incorrect:       %10d\n", mispredictions);
   float mispredict_rate = 100*((float)mispredictions / (float)num_branches);
-  printf("Misprediction Rate: %7.3f\n", mispredict_rate);
+  char* method;
+  switch (bpType)
+  {
+  case 0:
+    method = "STATIC";
+    break;
+  case 1:
+    method = "GSHARE";
+    break;
+  case 2:
+    method = "TOURNAMENT";
+    break;
+  case 4:
+    method = "CUSTOM";
+    break;
+  default:
+    break;
+  }
+
+  printf("%s : %-5s, Error Rate: %7.3f\n", method, file_name, mispredict_rate);
 
   // Cleanup
   fclose(stream);

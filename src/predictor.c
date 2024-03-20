@@ -204,10 +204,9 @@ train_predictor(uint32_t pc, uint8_t outcome)
     case GSHARE:
       // update counter table
       index = get_index(pc, 0);
-      if(outcome == TAKEN && counter_table[index] < 3)
-        counter_table[index]++;
-      if(outcome == NOTTAKEN && counter_table[index] > 0)
-        counter_table[index]--;
+      increase = (outcome == TAKEN);
+      decrease = (outcome == NOTTAKEN);
+      update_table(counter_table, index, increase, decrease);
 
       // update global register
       updated_history = (global_history << 1) | outcome; // the last bit is current outcome
