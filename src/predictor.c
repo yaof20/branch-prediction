@@ -97,7 +97,7 @@ uint8_t predict(uint32_t pc){
     uint32_t local_index = get_index(pc, 1);
     uint32_t global_index = get_index(pc, 2);
 
-    if(predict_select_table[global_index] < 2)
+    if(predict_select_table[global_index] > 1)
       return (local_counter_table[local_index] > 1) ? TAKEN : NOTTAKEN;
     else
       return (global_counter_table[global_index] > 1) ? TAKEN : NOTTAKEN;
@@ -111,6 +111,12 @@ void init_table(uint32_t* table, int length, uint32_t value){
       }
 }
 
+void update_table(uint32_t* table, uint32_t index, uint8_t increase, uint8_t decrease){
+  if(increase && table[index] < 3)
+    table[index]++;
+  if(decrease && table[index] > 0)
+    table[index]--;
+}
 
 // Initialize the predictor
 //
@@ -193,6 +199,7 @@ train_predictor(uint32_t pc, uint8_t outcome)
   uint32_t index, local_index, global_index;
   uint32_t local_counter, global_counter;
   uint32_t updated_history, updated_counter;
+  uint8_t increase, decrease;
   switch (bpType) {
     case GSHARE:
       // update counter table
@@ -208,34 +215,21 @@ train_predictor(uint32_t pc, uint8_t outcome)
       break;
 
     case TOURNAMENT:
-      index = get_index(pc, 0);
+      // update predict select table
       local_index = get_index(pc, 1);
       global_index = get_index(pc, 2);
-      
+      increase = (local_counter_table[local_index] == outcome && global_counter_table[global_index] != outcome);
+      decrease = (local_counter_table[local_index] != outcome && global_counter_table[global_index] == outcome);
+      update_table(predict_select_table, global_index, increase, decrease);
 
-      // update predict select table
-      if(local_counter_table[local_index] == outcome && global_counter_table[global_index] != outcome){
-        if(predict_select_table[global_index] > 0)
-          predict_select_table[global_index]--;
-      }
-      
-      if(local_counter_table[local_index] != outcome && global_counter_table[global_index] == outcome){
-        if(predict_select_table[global_index] < 3)
-          predict_select_table[global_index]++;
-      }
-      // update local counter table
-      if(outcome == TAKEN && local_counter_table[local_index] < 3)
-        local_counter_table[local_index]++;
-      if(outcome == NOTTAKEN && local_counter_table[local_index] > 0)
-        local_counter_table[local_index]--;
-
-      // update glocal counter table
-      if(outcome == TAKEN && global_counter_table[global_index] < 3)
-        global_counter_table[global_index]++;
-      if(outcome == NOTTAKEN && global_counter_table[global_index] > 0)
-        global_counter_table[global_index]--;
+      // update local counter table & global counter table
+      increase = (outcome == TAKEN);
+      decrease = (outcome == NOTTAKEN);
+      update_table(local_counter_table, local_index, increase, decrease);
+      update_table(global_counter_table, global_index, increase, decrease);
       
       // update local history table
+      index = get_index(pc, 0);
       local_history = local_history_table[index];
       updated_history = (local_history << 1) | outcome; // the last bit is current outcome
       local_history_table[index] = get_lower_bits(updated_history, lhistoryBits);
