@@ -47,8 +47,9 @@ handle_option(char *arg)
   } else if (!strncmp(arg,"--tournament:",13)) {
     bpType = TOURNAMENT;
     sscanf(arg+13,"%d:%d:%d", &ghistoryBits, &lhistoryBits, &pcIndexBits);
-  } else if (!strcmp(arg,"--custom")) {
+  } else if (!strncmp(arg,"--custom:", 9)) {
     bpType = CUSTOM;
+    sscanf(arg+9,"%d:%d:%d", &ghistoryBits, &lhistoryBits, &pcIndexBits);
   } else if (!strcmp(arg,"--verbose")) {
     verbose = 1;
   } else {
@@ -111,6 +112,7 @@ main(int argc, char *argv[])
   uint32_t mispredictions = 0;
   uint32_t pc = 0;
   uint8_t outcome = NOTTAKEN;
+  int memory_bits = 0;
 
   // Reach each branch from the trace
   while (read_branch(&pc, &outcome)) {
@@ -132,27 +134,29 @@ main(int argc, char *argv[])
   // Print out the mispredict statistics
   // printf("Branches:        %10d\n", num_branches);
   // printf("Incorrect:       %10d\n", mispredictions);
-  float mispredict_rate = 100*((float)mispredictions / (float)num_branches);
-  char* method;
   switch (bpType)
   {
-  case 0:
-    method = "STATIC";
+  case GSHARE:
+    memory_bits = ghistoryBits + pcIndexBits + (1 << ghistoryBits) * 2;
     break;
-  case 1:
-    method = "GSHARE";
+  
+  case TOURNAMENT:
+    memory_bits = (pcIndexBits + (1 << pcIndexBits) * lhistoryBits + (1 << lhistoryBits) * 2) + 
+    (ghistoryBits + (1 << ghistoryBits) * 2) + ((1 << ghistoryBits) * 2);
     break;
-  case 2:
-    method = "TOURNAMENT";
+  
+  case CUSTOM:
+    memory_bits = (pcIndexBits + (1 << pcIndexBits) * lhistoryBits + (1 << lhistoryBits) * 2) + 
+    (ghistoryBits + (1 << ghistoryBits) * 2) + ((1 << ghistoryBits) * 2);
     break;
-  case 3:
-    method = "CUSTOM";
-    break;
+  
   default:
     break;
   }
 
-  printf("%s : %-5s, Error Rate: %7.3f\n", method, file_name, mispredict_rate);
+
+  float mispredict_rate = 100*((float)mispredictions / (float)num_branches);
+  printf("%s : %-5s, Error Rate: %7.3f, Memory Bits:%d \n", bpName[bpType], file_name, mispredict_rate, memory_bits);
 
   // Cleanup
   fclose(stream);

@@ -1,20 +1,28 @@
-STATIC : fp_1 , Error Rate:  12.128
-STATIC : fp_2 , Error Rate:  42.350
-STATIC : int_1, Error Rate:  44.136
-STATIC : int_2, Error Rate:   5.508
-STATIC : mm_1 , Error Rate:  50.353
-STATIC : mm_2 , Error Rate:  37.045
+Static : fp_1 , Error Rate:  12.128, Memory Bits:0 
+Static : fp_2 , Error Rate:  42.350, Memory Bits:0 
+Static : int_1, Error Rate:  44.136, Memory Bits:0 
+Static : int_2, Error Rate:   5.508, Memory Bits:0 
+Static : mm_1 , Error Rate:  50.353, Memory Bits:0 
+Static : mm_2 , Error Rate:  37.045, Memory Bits:0 
 ===============
-GSHARE : fp_1 , Error Rate:   0.825
-GSHARE : fp_2 , Error Rate:   1.678
-GSHARE : int_1, Error Rate:  13.839
-GSHARE : int_2, Error Rate:   0.420
-GSHARE : mm_1 , Error Rate:   6.696
-GSHARE : mm_2 , Error Rate:  10.138
+Gshare : fp_1 , Error Rate:   0.841, Memory Bits:16397 
+Gshare : fp_2 , Error Rate:   1.674, Memory Bits:16397 
+Gshare : int_1, Error Rate:  13.850, Memory Bits:16397 
+Gshare : int_2, Error Rate:   0.431, Memory Bits:16397 
+Gshare : mm_1 , Error Rate:   6.740, Memory Bits:16397 
+Gshare : mm_2 , Error Rate:  10.126, Memory Bits:16397 
 ===============
-TOURNAMENT : fp_1 , Error Rate:   1.030
-TOURNAMENT : fp_2 , Error Rate:   5.429
-TOURNAMENT : int_1, Error Rate:  14.662
-TOURNAMENT : int_2, Error Rate:   0.504
-TOURNAMENT : mm_1 , Error Rate:   4.919
-TOURNAMENT : mm_2 , Error Rate:   9.454
+Tournament : fp_1 , Error Rate:   1.035, Memory Bits:14355 
+Tournament : fp_2 , Error Rate:   6.719, Memory Bits:14355 
+Tournament : int_1, Error Rate:  14.664, Memory Bits:14355 
+Tournament : int_2, Error Rate:   0.518, Memory Bits:14355 
+Tournament : mm_1 , Error Rate:   4.942, Memory Bits:14355 
+Tournament : mm_2 , Error Rate:   9.463, Memory Bits:14355 
+===============
+Custom : fp_1 , Error Rate:   0.825, Memory Bits:55320 
+Custom : fp_2 , Error Rate:   1.125, Memory Bits:55320 
+Custom : int_1, Error Rate:  12.483, Memory Bits:55320 
+Custom : int_2, Error Rate:   0.369, Memory Bits:55320 
+Custom : mm_1 , Error Rate:   2.707, Memory Bits:55320 
+Custom : mm_2 , Error Rate:   8.165, Memory Bits:55320 
+memory limit is 65792

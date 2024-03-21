@@ -84,6 +84,25 @@ int get_index(uint32_t pc, uint32_t predictor_id){
       }
       break;
     
+    case CUSTOM:
+      // index to local history table
+      if(predictor_id == 0){ 
+        pc_index = get_lower_bits(pc, pcIndexBits);
+        return pc_index;
+      }
+      // index to local counter table
+      if(predictor_id == 1){
+        pc_index = get_lower_bits(pc, pcIndexBits);
+        local_history = local_history_table[pc_index];
+        return get_lower_bits(local_history, lhistoryBits);
+      }
+      // index to global counter table
+      if(predictor_id == 2){
+        pc_lower_bits = get_lower_bits(pc, ghistoryBits);
+        return (pc_lower_bits ^ global_history);
+      }
+      break;
+    
     default:
       break;
   }
@@ -97,6 +116,16 @@ uint8_t predict(uint32_t pc){
   }
 
   if(bpType==TOURNAMENT){
+    uint32_t local_index = get_index(pc, 1);
+    uint32_t global_index = get_index(pc, 2);
+
+    if(predict_select_table[global_index] > 1)
+      return (local_counter_table[local_index] > 1) ? TAKEN : NOTTAKEN;
+    else
+      return (global_counter_table[global_index] > 1) ? TAKEN : NOTTAKEN;
+  }
+
+  if(bpType==CUSTOM){
     uint32_t local_index = get_index(pc, 1);
     uint32_t global_index = get_index(pc, 2);
 
@@ -138,7 +167,7 @@ init_predictor()
       // init counter table
       table_length = 1 << ghistoryBits;
       counter_table = (uint32_t*)malloc(table_length * sizeof(uint32_t));
-      init_table(counter_table, table_length, WN);
+      init_table(counter_table, table_length, 2);
       break;
 
     case TOURNAMENT:
@@ -157,7 +186,26 @@ init_predictor()
       init_table(global_counter_table, table_length, WN);
 
       predict_select_table = (uint32_t*)malloc(table_length * sizeof(uint32_t));
-      init_table(predict_select_table, table_length, WT);
+      init_table(predict_select_table, table_length, WN);
+      break;
+    
+    case CUSTOM:
+      global_history = 0;
+
+      table_length = 1 << pcIndexBits;
+      local_history_table = (uint32_t*)malloc(table_length * sizeof(uint32_t));
+      init_table(local_history_table, table_length, 0);
+
+      table_length = 1 << lhistoryBits;
+      local_counter_table = (uint32_t*)malloc(table_length * sizeof(uint32_t));
+      init_table(local_counter_table, table_length, WN);
+
+      table_length = 1 << ghistoryBits;
+      global_counter_table = (uint32_t*)malloc(table_length * sizeof(uint32_t));
+      init_table(global_counter_table, table_length, WN);
+
+      predict_select_table = (uint32_t*)malloc(table_length * sizeof(uint32_t));
+      init_table(predict_select_table, table_length, WN);
       break;
     
     default:
@@ -185,7 +233,7 @@ make_prediction(uint32_t pc)
     case TOURNAMENT:
       return predict(pc);
     case CUSTOM:
-      return TAKEN;
+      return predict(pc);
     default:
       break;
   }
@@ -222,6 +270,31 @@ train_predictor(uint32_t pc, uint8_t outcome)
       break;
 
     case TOURNAMENT:
+      // update predict select table
+      local_index = get_index(pc, 1);
+      global_index = get_index(pc, 2);
+      increase = (local_counter_table[local_index] == outcome && global_counter_table[global_index] != outcome);
+      decrease = (local_counter_table[local_index] != outcome && global_counter_table[global_index] == outcome);
+      update_table(predict_select_table, global_index, increase, decrease);
+
+      // update local counter table & global counter table
+      increase = (outcome == TAKEN);
+      decrease = (outcome == NOTTAKEN);
+      update_table(local_counter_table, local_index, increase, decrease);
+      update_table(global_counter_table, global_index, increase, decrease);
+      
+      // update local history table
+      index = get_index(pc, 0);
+      local_history = local_history_table[index];
+      updated_history = (local_history << 1) | outcome; // the last bit is current outcome
+      local_history_table[index] = get_lower_bits(updated_history, lhistoryBits);
+
+      // update global history
+      updated_history = (global_history << 1) | outcome; // the last bit is current outcome
+      global_history = get_lower_bits(updated_history, ghistoryBits);
+      break;
+    
+    case CUSTOM:
       // update predict select table
       local_index = get_index(pc, 1);
       global_index = get_index(pc, 2);

@@ -15,3 +15,10 @@ for file in "${files[@]}"; do
     ./predictor --tournament:9:10:10 "$file"
 done
 
+echo "==============="
+for file in "${files[@]}"; do
+    ./predictor --custom:13:10:11 "$file"
+done
+
+echo "memory limit is 65792"
+
