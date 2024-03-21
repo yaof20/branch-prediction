@@ -145,7 +145,7 @@ main(int argc, char *argv[])
   case 2:
     method = "TOURNAMENT";
     break;
-  case 4:
+  case 3:
     method = "CUSTOM";
     break;
   default:

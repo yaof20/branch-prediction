@@ -64,6 +64,7 @@ int get_index(uint32_t pc, uint32_t predictor_id){
     case GSHARE:
       pc_lower_bits = get_lower_bits(pc, ghistoryBits);
       return (pc_lower_bits ^ global_history);
+      break;
 
     case TOURNAMENT:
       // index to local history table
@@ -81,6 +82,8 @@ int get_index(uint32_t pc, uint32_t predictor_id){
       if(predictor_id == 2){
         return get_lower_bits(global_history, ghistoryBits);
       }
+      break;
+    
     default:
       break;
   }
@@ -136,6 +139,8 @@ init_predictor()
       table_length = 1 << ghistoryBits;
       counter_table = (uint32_t*)malloc(table_length * sizeof(uint32_t));
       init_table(counter_table, table_length, WN);
+      break;
+
     case TOURNAMENT:
       global_history = 0;
 
@@ -145,14 +150,16 @@ init_predictor()
 
       table_length = 1 << lhistoryBits;
       local_counter_table = (uint32_t*)malloc(table_length * sizeof(uint32_t));
-      init_table(local_counter_table, table_length, 1);
+      init_table(local_counter_table, table_length, WN);
 
       table_length = 1 << ghistoryBits;
       global_counter_table = (uint32_t*)malloc(table_length * sizeof(uint32_t));
-      init_table(global_counter_table, table_length, 1);
+      init_table(global_counter_table, table_length, WN);
 
       predict_select_table = (uint32_t*)malloc(table_length * sizeof(uint32_t));
-      init_table(predict_select_table, table_length, 2);
+      init_table(predict_select_table, table_length, WT);
+      break;
+    
     default:
       break;
   }
@@ -178,6 +185,7 @@ make_prediction(uint32_t pc)
     case TOURNAMENT:
       return predict(pc);
     case CUSTOM:
+      return TAKEN;
     default:
       break;
   }
@@ -236,10 +244,8 @@ train_predictor(uint32_t pc, uint8_t outcome)
       // update global history
       updated_history = (global_history << 1) | outcome; // the last bit is current outcome
       global_history = get_lower_bits(updated_history, ghistoryBits);
-      
       break;
-
-    case CUSTOM:
+    
     default:
       break;
   }
